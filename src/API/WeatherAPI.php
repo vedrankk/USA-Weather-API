@@ -43,5 +43,23 @@ class WeatherAPI extends Model{
         return $this;
     }
     
+    public function returnAllData(){
+        $data = $this->select()->orderBy('record_id ASC')->all();
+        $json = [];
+        foreach($data as $key => $val){
+            foreach($val as $v_key => $v_val){
+                if($v_key == 'location'){
+                    $location = new LocationData();
+                    $v_val = $location->select()->where(['location_id' => $v_val])->asArray()->one();
+                }
+                if($v_key == 'temperature'){
+                    $v_val = json_decode($v_val);
+                }
+                $json[$key][$v_key] = $v_val;
+            }
+        }
+        return json_encode($json, JSON_PRETTY_PRINT);
+    }
+    
 }
 
