@@ -32,5 +32,6 @@ class LocationData extends Model
         $this->innerSet('lon', $json->lon);
         $this->innerSet('city', $json->city);
         $this->innerSet('state', $json->state);
+        return $this;
     }
 }

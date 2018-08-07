@@ -33,53 +33,15 @@ class WeatherAPI extends Model{
             foreach($val as $v_key => $v_val){
                 if($v_key == 'location'){
                     $location_data = new LocationData();
-                    $location_data->loadJson($v_val);
-                    print_r($location_data->save()); exit;
-                    continue;
+                    $location_data->loadJson($v_val)->save();
+                    $v_val = $location_data->getLastInsertId();
                 }
                 $this->innerSet($v_key, $v_val);
             }
+            $this->save();
         }
+        return $this;
     }
-    
-//    public function types() : array
-//    {
-//        return [
-//            'date' => 'string',
-//            'location' => [
-//                'type' => 'array',
-//                'length' => 4,
-//                'keys' => ['lat', 'long', 'city', 'state'],
-//                'key_types' => [
-//                    'lat' => 'float',
-//                    'long' => 'float',
-//                    'city' => 'string',
-//                    'state' => 'string',
-//                ],
-//                'special_filters' => [
-//                    'lat' => [
-//                        'filter' => 'decimalSpaces',
-//                        'decimalSpaces' => 2
-//                    ],
-//                    'long' => [
-//                        'filter' => 'decimalSpaces',
-//                        'decimalSpaces' => 2
-//                    ]
-//                ]
-//            ],
-//            'temperature' => [
-//                'type' => 'array',
-//                'length' => '24',
-//                'key_types' => [
-//                    'all' => 'float'
-//                ],
-//                'special_filters' => [
-//                    'all' => 'decimalSpaces',
-//                    'decimalSpaces' => 2
-//                ]
-//            ]
-//        ];
-//    }
     
 }
 

@@ -416,21 +416,6 @@ class Model extends DB
 		}
 	}
         
-        private function filterPostData(){
-            $filters = $this->filters();
-            $values = implode(', ', array_map(
-                        function($str) use ($filters){
-                            if(array_key_exists($str, $filters)){
-                                $this->$str = $this->{'filter'.$filters[$str]}($this->$str);
-                            }
-                            return sprintf('"%s"', $this->$str);
-                            
-                        }
-                        , $this->attrNoPK())
-                );
-            return $values;
-        }
-        
         protected function filterUnixDate(string $date) : int
         {
             return strtotime($date);
@@ -440,14 +425,14 @@ class Model extends DB
             $this->__set($name, $value);
         }
         
-        protected function filterJsonArray(array $json, array $settings) : array
+        protected function filterJsonArray(array $json, array $settings) : string
         {
             foreach($json as $key => $val){
                 $filter = $settings['filter'];
                 $param = $settings['params'];
                 $json[$key] = $this->{'filter'.$filter}($val, $param);
             }
-            return $json;
+            return json_encode($json);
         }
         
         protected function filterFloatValue($value, $length) : float
