@@ -61,6 +61,55 @@ class Model extends DB
 	{
 		return [];
 	}
+        
+        public function filters() : array
+        {
+            return [];
+        }
+        
+        public function types() : array
+        {
+            return [];
+        }
+        
+        public function __set($name, $value)
+        {
+            if(!empty($value) && array_key_exists($name, $this->filters())){
+                $filter = $this->filters()[$name];
+                if(is_array($filter)){
+                    $filter_name = $filter['filter'];
+                    if(isset($filter['params'])){
+                        if(isset($filter['params']['all'])){
+                            $inner_filter = $filter['params']['all'];
+                            $inner_filter_params = $filter['params'][$inner_filter];
+                            $value = $this->{'filter'.$filter_name}($value, ['filter' => $inner_filter, 'params' => $inner_filter_params]);
+                        }
+                        else{
+                            $value = $this->{'filter'.$filter_name}($value);
+                        }
+                    }
+                    elseif(isset($filter['param'])){
+                        $value = $this->{'filter'.$filter_name}($value, [$filter['param']]);
+                    }
+                    else{
+                        $value = $this->{'filter'.$filter_name}($value);
+                    }
+                }
+                else{
+                    $value = $this->{'filter'.$filter}($value);
+                }
+            }
+            $this->$name = $value;
+        }
+//        
+//        protected function filterValue($filter){
+//            if(is_array($filter)){
+//                
+//            }
+//            else{
+//                
+//            }
+//        }
 
 	/*
 	* Primary key, always the first place in attributes array
@@ -297,7 +346,7 @@ class Model extends DB
 		{
 			if(in_array($key, static::attributes()))
 			{
-				$this->$key = $val;
+			  $this->$key = $val;
 			}
 		}
 		$this->isNewRow();
@@ -350,11 +399,13 @@ class Model extends DB
 	*/
 	private function insert()
 	{
+                $filters = $this->filters();
 		$sql = 'INSERT INTO '.static::tableName() .' (';
 		$fields = implode(', ', $this->attrNoPK());
 		$values = implode(', ', array_map(function($str){return sprintf('"%s"', $this->$str);}, $this->attrNoPK()));
 		
 		$sql .= $fields.') VALUES('.$values.')';
+                
 		try{
 			$this->conn->exec($sql);
 			return true;
@@ -364,6 +415,45 @@ class Model extends DB
 			exit;
 		}
 	}
+        
+        private function filterPostData(){
+            $filters = $this->filters();
+            $values = implode(', ', array_map(
+                        function($str) use ($filters){
+                            if(array_key_exists($str, $filters)){
+                                $this->$str = $this->{'filter'.$filters[$str]}($this->$str);
+                            }
+                            return sprintf('"%s"', $this->$str);
+                            
+                        }
+                        , $this->attrNoPK())
+                );
+            return $values;
+        }
+        
+        protected function filterUnixDate(string $date) : int
+        {
+            return strtotime($date);
+        }
+    
+        protected function innerSet($name, $value){
+            $this->__set($name, $value);
+        }
+        
+        protected function filterJsonArray(array $json, array $settings) : array
+        {
+            foreach($json as $key => $val){
+                $filter = $settings['filter'];
+                $param = $settings['params'];
+                $json[$key] = $this->{'filter'.$filter}($val, $param);
+            }
+            return $json;
+        }
+        
+        protected function filterFloatValue($value, $length) : float
+        {   
+          return floatval(number_format((float)$value, $length[0], '.', ''));
+        }
 
 	/*
 	* Gets the last ID inserted
