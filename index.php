@@ -10,6 +10,7 @@ $api = new WeatherAPI();
 
 $data = json_decode(file_get_contents('php://input'), true);
 //$api->loadJson($data['weather']['weather']);
+//print_r($api->getSpecific('35.1234', '-88.5897'));
 print_r($api->returnAllData());
 //print_r($api->locationObj);
 

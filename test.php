@@ -2,7 +2,7 @@
 //echo floatval('-12.2');
 //echo '<br><br>';
 //API URL
-$url = 'http://localhost/FishingBooker/';
+$url = 'http://localhost/FishingBooker/index.php?lat=35.1234&lon=-88.5897';
 
 //create a new cURL resource
 $ch = curl_init($url);
