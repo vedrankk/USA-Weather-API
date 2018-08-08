@@ -11,8 +11,8 @@ $ch = curl_init($url);
 $data = array(
     'weather' => [
         '{
- "id": 1,
- "date": "1985-01-01",
+ "id": 4,
+ "date": "1985-01-07",
  "location": {
        "lat": 35.12313132,
        "lon": -111.6664123,
@@ -26,8 +26,8 @@ $data = array(
       41.9, 38, 35.0, 33.0, 31.1, 29.9
    ]
 }','{
- "id": 2, 
- "date": "1985-01-02",
+ "id": 5, 
+ "date": "1985-01-08",
  "location": {
       "lat": 36.1189,
       "lon": -86.6892,
@@ -57,6 +57,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 //execute the POST request
 $result = curl_exec($ch);
 print_r($result);
+//print_r($_SERVER);
 
 //close cURL resource
 curl_close($ch);

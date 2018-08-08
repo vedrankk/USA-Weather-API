@@ -231,7 +231,9 @@ class Model extends DB
 		if(!empty($data)){
 			foreach(static::attributes() as $attribute)
 			{
+                            if(isset($data[0][$attribute])){
 				$this->$attribute = $data[0][$attribute];
+                            }
 			}
 			if($this->as_array)
 			{

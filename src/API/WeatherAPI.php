@@ -38,6 +38,9 @@ class WeatherAPI extends Model{
                 }
                 $this->innerSet($v_key, $v_val);
             }
+            if(!empty($this->select('id')->where(['id' => $this->id])->asArray()->one())){
+                return ['response_code' => 400];
+            }
             $this->save();
         }
         return $this;
@@ -70,7 +73,26 @@ class WeatherAPI extends Model{
     }
     
     public function returnTemperatureRanges(){
-        
+        $data = $this->select('weather.record_id, weather.temperature, location_data.city, location_data.state, location_data.lat, location_data.lon')
+                ->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])
+                ->where(sprintf('date BETWEEN %s AND %s', 473554800, 474159600))->all();
+        $state_data = [];
+        foreach($data as $key => $val){
+            $state_data[$val['city']]['city'] = $val['city'];
+            if(!isset($state_data[$val['city']]['temperature'])){
+                $state_data[$val['city']]['temperature'] = [];
+            }
+            $state_data[$val['city']]['temperature'] = array_merge($state_data[$val['city']]['temperature'], json_decode($val['temperature']));
+            $state_data[$val['city']]['lat'] = $val['lat'];
+            $state_data[$val['city']]['lon'] = $val['lon'];
+            $state_data[$val['city']]['state'] = $val['state'];
+        }
+        foreach($state_data as $key => $state){
+            $state_data[$key]['max'] = max($state['temperature']);
+            $state_data[$key]['min'] = min($state['temperature']);
+            unset($state_data[$key]['temperature']);
+        }
+        return json_encode(array_values($state_data));
     }
     
 }
