@@ -2,6 +2,9 @@
 
 class LocationData extends Model
 {
+    
+    private $json = '';
+    
     public function tableName() : string
     {
         return 'location_data';
@@ -10,6 +13,11 @@ class LocationData extends Model
     public function attributes() : array
     {
         return ['location_id', 'lat', 'lon', 'city', 'state'];
+    }
+    
+    public function types() : array
+    {
+        return ['lat' =>  'float', 'lon' =>  'float', 'city' =>  'string', 'state' => 'string'];
     }
     
     public function filters() : array

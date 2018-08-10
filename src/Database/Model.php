@@ -14,6 +14,8 @@ class Model extends DB
 	protected $new_row = false;
 	protected $where_values = [];
 	protected $as_array = false;
+        protected $errorMessage = '';
+        protected $error = '';
 
 	const METHOD_SELECT = 'select';
 	const METHOD_UPDATE = 'update';
@@ -99,17 +101,22 @@ class Model extends DB
                     $value = $this->{'filter'.$filter}($value);
                 }
             }
-            $this->$name = $value;
+            $this->name = $value;
         }
-//        
-//        protected function filterValue($filter){
-//            if(is_array($filter)){
-//                
-//            }
-//            else{
-//                
-//            }
-//        }
+        
+        protected function validateType($name, $value){
+            if(isset($this->types()[$name])){
+                $func = 'is_'.$this->types()[$name];
+                if($func($value)){
+                    return true;
+                }
+                else{
+                    $this->errorMessage .= (sprintf('<br>Invalid type for field: %s. Type: %s, expected: %s', $name, gettype($value), $this->types()[$name]));
+                    return false;
+                }
+            }
+            return true;
+        }
 
 	/*
 	* Primary key, always the first place in attributes array
@@ -372,6 +379,7 @@ class Model extends DB
 	*/
 	public function save(array $where = [])
 	{
+            if(empty($this->errorMessage)){
 		$allSet = true;
 		foreach(static::attributes() as $attribute)
 		{
@@ -386,6 +394,12 @@ class Model extends DB
 			$this->isNewRow();
 			return $this->new_row ? $this->insert() : $this->update($where);
 		}
+            }
+            else{
+                $this->error = $this->errorMessage;
+                $this->errorMessage = '';
+                return false;
+            }
 	}
 
 	/*
@@ -424,7 +438,10 @@ class Model extends DB
         }
     
         protected function innerSet($name, $value){
-            $this->__set($name, $value);
+            if($this->validateType($name, $value)){
+                $this->__set($name, $value);
+            }
+            $this->name = null;
         }
         
         protected function filterJsonArray(array $json, array $settings) : string

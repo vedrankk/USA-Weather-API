@@ -13,6 +13,11 @@ class WeatherAPI extends Model{
         return ['record_id', 'id', 'date', 'location', 'temperature'];
     }
     
+    public function types() : array
+    {
+        return ['id' => 'int', 'date' => 'string', 'location' => 'int', 'temperature' => 'array'];
+    }
+    
     public function filters() : array
     {
         return [
@@ -28,22 +33,25 @@ class WeatherAPI extends Model{
     }
     
     public function loadJson($json){
-        foreach($json as $key => $val){
-            $val = (array) json_decode($val);
+            $val = (array) json_decode($json);
+            if(!empty($this->select('id')->where(['id' => $val['id']])->asArray()->one())){
+                 header("HTTP/1.0 400 ID Exists");
+                 return;
+            }
+            
             foreach($val as $v_key => $v_val){
                 if($v_key == 'location'){
                     $location_data = new LocationData();
-                    $location_data->loadJson($v_val)->save();
-                    $v_val = $location_data->getLastInsertId();
+                    if($location_data->loadJson($v_val)->save()){
+                        $v_val = $location_data->getLastInsertId();
+                    }
+                    else{
+                        return json_encode(['response_message' => $location_data->error]);
+                    }
                 }
                 $this->innerSet($v_key, $v_val);
             }
-            if(!empty($this->select('id')->where(['id' => $this->id])->asArray()->one())){
-                return ['response_code' => 400];
-            }
-            $this->save();
-        }
-        return $this;
+            return $this->save() ? $this->getLastInsertId() : false;
     }
     
     private function formatDataForOutput(array $data) : array
@@ -78,13 +86,13 @@ class WeatherAPI extends Model{
                 ->where(sprintf('date BETWEEN %s AND %s', 473554800, 474159600))->all();
         $state_data = [];
         foreach($data as $key => $val){
-            $state_data[$val['city']]['city'] = $val['city'];
+            $state_data[$val['city']]['lat'] = $val['lat'];
             if(!isset($state_data[$val['city']]['temperature'])){
                 $state_data[$val['city']]['temperature'] = [];
             }
             $state_data[$val['city']]['temperature'] = array_merge($state_data[$val['city']]['temperature'], json_decode($val['temperature']));
-            $state_data[$val['city']]['lat'] = $val['lat'];
             $state_data[$val['city']]['lon'] = $val['lon'];
+            $state_data[$val['city']]['city'] = $val['city'];
             $state_data[$val['city']]['state'] = $val['state'];
         }
         foreach($state_data as $key => $state){

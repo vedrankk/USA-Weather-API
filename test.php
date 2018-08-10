@@ -1,17 +1,14 @@
 <?php
-//echo floatval('-12.2');
-//echo '<br><br>';
-//API URL
-$url = 'http://localhost/FishingBooker/index.php?lat=35.1234&lon=-88.5897';
 
-//create a new cURL resource
+//$url = 'http://localhost/FishingBooker/index.php?lat=35.1234&lon=-88.5897';
+$url = 'http://localhost/FishingBooker/weather?a=hello&lat=35.1234&lon=-88.5897';
+
 $ch = curl_init($url);
 
 //setup request to send json via POST
-$data = array(
-    'weather' => [
+$data = 
         '{
- "id": 4,
+ "id": 22,
  "date": "1985-01-07",
  "location": {
        "lat": 35.12313132,
@@ -25,25 +22,8 @@ $data = array(
       43.2, 44.4, 45.0, 45.3, 45.1, 44.2,
       41.9, 38, 35.0, 33.0, 31.1, 29.9
    ]
-}','{
- "id": 5, 
- "date": "1985-01-08",
- "location": {
-      "lat": 36.1189,
-      "lon": -86.6892,
-      "city": "Nashville",
-      "state": "Tennessee"
-   },
- "temperature": [
-      37.5, 37.0, 36.6, 36.2, 35.9, 35.5,
-      35.3, 35.2, 36.1, 38.3, 40.6, 42.7,
-      44.2, 45.3, 46.0, 46.1, 45.3, 43.3,
-      42.0, 41.2, 40.3, 39.6, 39.0, 38.4
- ]
-} '
-    ]
-);
-$payload = json_encode(array("weather" => $data));
+}';
+$payload = json_encode($data);
 
 //attach encoded JSON string to the POST fields
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
@@ -57,7 +37,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 //execute the POST request
 $result = curl_exec($ch);
 print_r($result);
-//print_r($_SERVER);
+//print_r(get_headers($url));
 
 //close cURL resource
 curl_close($ch);
