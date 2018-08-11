@@ -81,11 +81,12 @@ class WeatherAPI extends Model{
     public function returnAllData($params){
         $data = $this->select()->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])->orderBy('record_id ASC');
         $data = !empty($params) ? $data->where(['lat' => $params['lat'], 'lon' => $params['lon']])->all() : $data->all();
-        $this->json = [];
+        
+        $json = [];
         foreach($data as $key => $val){
                 $json[$key] = $this->formatDataForOutput($val);
         }
-        return json_encode($json, JSON_PRETTY_PRINT);
+        return json_encode(empty($json) ? ['notice' => 'No data available'] : $json, JSON_PRETTY_PRINT);
     }
     
     public function returnTemperatureRanges(){
