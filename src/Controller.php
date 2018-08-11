@@ -30,7 +30,7 @@ class Controller extends Request
     public function actionTemperature(){
         $requestParams = $this->getWeatherTemperatureRequestParams($_GET);
         if(!empty($requestParams) && !isset($requestParams['error'])){
-            return $this->api->returnTemperatureRanges();
+            return $this->api->returnTemperatureRanges($requestParams);
         }
         else{
             return json_encode($requestParams);

@@ -89,10 +89,10 @@ class WeatherAPI extends Model{
         return json_encode(empty($json) ? ['notice' => 'No data available'] : $json, JSON_PRETTY_PRINT);
     }
     
-    public function returnTemperatureRanges(){
+    public function returnTemperatureRanges($params){
         $data = $this->select('weather.record_id, weather.temperature, location_data.city, location_data.state, location_data.lat, location_data.lon')
                 ->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])
-                ->where(sprintf('date BETWEEN %s AND %s', strtotime($_GET['start']), strtotime($_GET['end'])))->orderBy('city ASC, state ASC')->all();
+                ->where(sprintf('date BETWEEN %s AND %s', strtotime($params['start']), strtotime($params['end'])))->orderBy('city ASC, state ASC')->all();
         $state_data = [];
         foreach($data as $key => $val){
             $state_data[$val['city']]['lat'] = $val['lat'];
