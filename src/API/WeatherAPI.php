@@ -120,11 +120,14 @@ class WeatherAPI extends Model{
         if(empty($params)){
             return $this->deleteAll();
         }
+        else{
+            return $this->deleteFromParams($params);
+        }
     }
     
     
         
-    public function deleteAll(){
+    private function deleteAll(){
             $sql = 'DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id';
 			try{
 				$this->conn->exec($sql);
@@ -135,6 +138,19 @@ class WeatherAPI extends Model{
 				exit;
 			}
     }
+    
+    private function deleteFromParams($params){
+        $sql = sprintf(
+                "DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id WHERE location_data.lat = %s AND location_data.lon = %s AND weather.date BETWEEN %s AND %s", $params['lat'], $params['lon'], strtotime($params['start']), strtotime($params['end']));
+   try{
+				$this->conn->exec($sql);
+				return true;
+			}
+			catch(Exception $e){
+				echo $e->getMessage();
+				exit;
+			}
+        }
     
 }
 
