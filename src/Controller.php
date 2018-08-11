@@ -1,13 +1,11 @@
 <?php
 
-class Controller
+class Controller extends Request
 {
-    private $route = '';
-    private $route_params = [];
     private $action = '';
     
     public function __construct(){
-        $this->api = new WeatherAPI();
+       $this->api = new WeatherAPI();
        $this->action = $_SERVER['REQUEST_METHOD'] == 'POST' ? 'actionCreate' : 'action' .ucfirst(isset($_GET['a']) ? $_GET['a'] : 'Default');
     }
     
@@ -20,11 +18,23 @@ class Controller
     }
     
     public function actionDefault(){
-        return 111;
+        $requestParams = $this->getWeatherRequestParams($_GET);
+        if(!isset($requestParams['error'])){
+            return $this->api->returnAllData($requestParams);
+        }
+        else{
+            return json_encode($requestParams);
+        }
     }
     
     public function actionTemperature(){
-        return 222;
+        $requestParams = $this->getWeatherTemperatureRequestParams($_GET);
+        if(!empty($requestParams) && !isset($requestParams['error'])){
+            return $this->api->returnTemperatureRanges();
+        }
+        else{
+            return json_encode($requestParams);
+        }
     }
     
     public function action404(){
@@ -32,4 +42,3 @@ class Controller
         die();
     }
 }
-

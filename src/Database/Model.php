@@ -74,6 +74,22 @@ class Model extends DB
             return [];
         }
         
+        protected function validateTypes($name, $value){
+            if(isset($this->types()[$name])){
+                $func = 'is_'.$this->types()[$name];
+                if($func($value)){
+                    return true;
+                }
+                else{
+                    $this->errorMessage .= sprintf('<br>Invalid data type for: %s. Recieved: %s, expected: %s.', $name, gettype($value), $this->types()[$name]);
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+        
         public function __set($name, $value)
         {
             if(!empty($value) && array_key_exists($name, $this->filters())){
@@ -101,22 +117,17 @@ class Model extends DB
                     $value = $this->{'filter'.$filter}($value);
                 }
             }
-            $this->name = $value;
+            $this->$name = $value;
         }
-        
-        protected function validateType($name, $value){
-            if(isset($this->types()[$name])){
-                $func = 'is_'.$this->types()[$name];
-                if($func($value)){
-                    return true;
-                }
-                else{
-                    $this->errorMessage .= (sprintf('<br>Invalid type for field: %s. Type: %s, expected: %s', $name, gettype($value), $this->types()[$name]));
-                    return false;
-                }
-            }
-            return true;
-        }
+//        
+//        protected function filterValue($filter){
+//            if(is_array($filter)){
+//                
+//            }
+//            else{
+//                
+//            }
+//        }
 
 	/*
 	* Primary key, always the first place in attributes array
@@ -424,6 +435,7 @@ class Model extends DB
                 
 		try{
 			$this->conn->exec($sql);
+                        $this->{$this->primaryKey()} = $this->getLastInsertId();
 			return true;
 		}
 		catch(Exception $e){
@@ -438,10 +450,12 @@ class Model extends DB
         }
     
         protected function innerSet($name, $value){
-            if($this->validateType($name, $value)){
+            if($this->validateTypes($name, $value)){
                 $this->__set($name, $value);
             }
-            $this->name = null;
+            else{
+                $this->$name = null;
+            }
         }
         
         protected function filterJsonArray(array $json, array $settings) : string
