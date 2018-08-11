@@ -116,8 +116,24 @@ class WeatherAPI extends Model{
         return json_encode(array_values($state_data));
     }
     
-    public function eraseData(){
+    public function eraseData($params){
+        if(empty($params)){
+            return $this->deleteAll();
+        }
+    }
+    
+    
         
+    public function deleteAll(){
+            $sql = 'DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id';
+			try{
+				$this->conn->exec($sql);
+				return true;
+			}
+			catch(Exception $e){
+				echo $e->getMessage();
+				exit;
+			}
     }
     
 }

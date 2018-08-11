@@ -3,7 +3,7 @@
 class Request{
     
     protected $requestErrorMessage = '';
-    protected function getEraseRequestParams() : array
+    protected function getEraseRequestParams($get) : array
     {
         if($this->validateRequestParams($get, ['start', 'end', 'lat', 'lon'], ['start' => 'string', 'end' => 'string', 'lat' => 'float', 'lon' => 'float'])){
           return $get;   
