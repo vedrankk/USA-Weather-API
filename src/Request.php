@@ -5,7 +5,7 @@ class Request{
     protected $requestErrorMessage = '';
     protected function getEraseRequestParams($get) : array
     {
-        if($this->validateRequestParams($get, ['start', 'end', 'lat', 'lon'], ['start' => 'string', 'end' => 'string', 'lat' => 'float', 'lon' => 'float'])){
+        if($this->validateRequestParams($get, ['start', 'end', 'lat', 'lon'], ['start' => 'date', 'end' => 'date', 'lat' => 'float', 'lon' => 'float'])){
           return $get;   
         }
         return empty($this->requestErrorMessage) ? [] : ['error' => $this->requestErrorMessage];
@@ -16,13 +16,13 @@ class Request{
         if($this->validateRequestParams($get, ['lat', 'lon'], ['lat' => 'float', 'lon' => 'float'])){
             return ['lat' => $get['lat'], 'lon' => $get['lon']];
         }
-        echo 111;
+        
         return empty($this->requestErrorMessage) ? [] : ['error' => $this->requestErrorMessage];
     }
     
     public function getWeatherTemperatureRequestParams($get) : array
     {
-        if($this->validateRequestParams($get, ['start', 'end'], ['start' => 'string', 'end' => 'string'])){
+        if($this->validateRequestParams($get, ['start', 'end'], ['start' => 'date', 'end' => 'date'])){
             return ['start' => $get['start'], 'end' => $get['end']];
         }
         return ['error' => empty($this->requestErrorMessage) ? 'The request is invalid.' : $this->requestErrorMessage];
@@ -48,10 +48,15 @@ class Request{
                 case 'float':
                     $req = $func((float)$get[$key]);
                 break;
+                case 'date':
+                   $date = DateTime::createFromFormat('Y-m-d', $get[$key]);
+                   $req = $date && $date->format('Y-m-d') === $get[$key];
+                break;
                 default:
                     $req = $func($get[$key]);
                 break;
             }
+            
             if(!$req){
                 $valid = false;
                 $this->requestErrorMessage = sprintf('Invalid type for: %s. Expected: %s, recieved: %s', $key, $val, gettype($get[$key]));
