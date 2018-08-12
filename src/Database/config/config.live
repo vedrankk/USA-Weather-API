@@ -1,9 +1,0 @@
-<?php
-
-return [
-    'username' => '',
-    'password' => '',
-    'host' => '',
-    'database' => ''
-];
-

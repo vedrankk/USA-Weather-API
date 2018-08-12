@@ -34,8 +34,9 @@ class WeatherAPI extends Model{
     
     public function loadJson($val){
             $val = (array) json_decode($val);
-            
+            print_r($this->select('id')->where(['id' => $val['id']])->asArray()->one()); echo '<br>';
             if(!empty($this->select('id')->where(['id' => $val['id']])->asArray()->one())){
+                echo 'ID: '.$val['id'];
                  http_response_code(400);
                  return;
             }
@@ -71,18 +72,20 @@ class WeatherAPI extends Model{
         $json['id'] = $data['id'];
         $json['date'] = date('Y-m-d', $data['date']);
         $json['location'] = [
-            'lat' => floatval($data['lat']),
-            'lon' => floatval($data['lon']),
+            'lat' => number_format(floatval($data['lat']), 4),
+            'lon' => number_format(floatval($data['lon']), 4),
             'city' => $data['city'],
             'state' => $data['state']
         ];
-        $json['temperature'] = json_decode($data['temperature']);
+        $json['temperature'] = array_map(function($e){
+            return number_format(floatval($e), 1);
+        }, json_decode($data['temperature']));
         return $json;
         
     }
     
     public function returnAllData($params){
-        $data = $this->select()->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])->orderBy('record_id ASC');
+        $data = $this->select()->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])->orderBy('id ASC');
         $data = !empty($params) ? $data->where(['lat' => $params['lat'], 'lon' => $params['lon']])->all() : $data->all();
         
         $json = [];
@@ -90,7 +93,11 @@ class WeatherAPI extends Model{
                 $json[$key] = $this->formatDataForOutput($val);
         }
         if(empty($json)){
-            http_response_code(404);
+            if(!empty($params)){
+                http_response_code(404);
+                return;
+            }
+            return json_encode(['message' => 'There is no data available.']);
         }
         else{
             http_response_code(200);
@@ -108,8 +115,8 @@ class WeatherAPI extends Model{
         }
         $state_data = [];
         foreach($data as $key => $val){
-            $state_data[$val['city']]['lat'] = floatval($val['lat']);
-            $state_data[$val['city']]['lon'] = floatval($val['lon']);
+            $state_data[$val['city']]['lat'] = number_format(floatval($val['lat']), 4);
+            $state_data[$val['city']]['lon'] = number_format(floatval($val['lon']), 4);
             $state_data[$val['city']]['city'] = $val['city'];
             if(!isset($state_data[$val['city']]['temperature'])){
                 $state_data[$val['city']]['temperature'] = [];
@@ -119,14 +126,11 @@ class WeatherAPI extends Model{
             $state_data[$val['city']]['state'] = $val['state'];
         }
         foreach($state_data as $key => $state){
-            $state_data[$key]['lowest'] = min($state['temperature']);
-            $state_data[$key]['highest'] = max($state['temperature']);
-//            if($state['city'] == 'Nashville'){
-//                print_r($state['temperature']);
-//            }
+            $state_data[$key]['lowest'] = number_format(floatval(min($state['temperature'])), 1);
+            $state_data[$key]['highest'] = number_format(floatval(max($state['temperature'])),1);
             unset($state_data[$key]['temperature']);
         }
-//        exit;
+        
         return json_encode(array_values($state_data));
     }
     
@@ -134,13 +138,11 @@ class WeatherAPI extends Model{
         if(empty($params)){
             if($this->deleteAll()){
                 http_response_code(200);
-                return true;
             }
         }
         else{
             if($this->deleteFromParams($params)){
                 http_response_code(200);
-                return true;
             }
         }
     }
@@ -148,29 +150,30 @@ class WeatherAPI extends Model{
     
         
     private function deleteAll(){
-            $sql = 'DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id';
-			try{
-				$this->conn->exec($sql);
-				return true;
-			}
-			catch(Exception $e){
-				echo $e->getMessage();
-				exit;
-			}
+//            $sql = 'DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id';
+        $sql = 'TRUNCATE weather; TRUNCATE location_data';
+            try{
+                    $this->conn->exec($sql);
+                    return true;
+            }
+            catch(Exception $e){
+                    echo $e->getMessage();
+                    exit;
+            }
     }
     
     private function deleteFromParams($params){
         $sql = sprintf(
                 "DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id WHERE location_data.lat = %s AND location_data.lon = %s AND weather.date BETWEEN %s AND %s", $params['lat'], $params['lon'], strtotime($params['start']), strtotime($params['end']));
-   try{
-				$this->conn->exec($sql);
-				return true;
-			}
-			catch(Exception $e){
-				echo $e->getMessage();
-				exit;
-			}
+        try{
+                $this->conn->exec($sql);
+                return true;
         }
+        catch(Exception $e){
+                echo $e->getMessage();
+                exit;
+        }
+    }
     
 }
 

@@ -1,9 +1,0 @@
-<?php
-
-return [
-    'username' => 'root',
-    'password' => 'root',
-    'host' => 'localhost',
-    'database' => 'fishing_booker'
-];
-
