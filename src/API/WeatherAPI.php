@@ -29,14 +29,14 @@ class WeatherAPI extends Model{
     
     public function types() : array
     {
-        return ['id' => 'int', 'date' => 'string', 'location' => 'int', 'temperature' => 'array'];
+        return ['id' => 'float', 'date' => 'string', 'location' => 'int', 'temperature' => 'array'];
     }
     
     public function loadJson($val){
             $val = (array) json_decode($val);
             
             if(!empty($this->select('id')->where(['id' => $val['id']])->asArray()->one())){
-                 header("HTTP/1.0 400 ID Exists");
+                 http_response_code(400);
                  return;
             }
             
@@ -53,11 +53,14 @@ class WeatherAPI extends Model{
                 $this->innerSet($v_key, $v_val);
             }
             if($this->save()){
-              header('HTTP/1.00 200 Success');
+              http_response_code(201);
               return true;
             }
             else{
                 $location_data->delete();
+                http_response_code(400);
+//                die();
+//                return false;
                 return json_encode(['response' => $this->error]);
             }
     }
@@ -86,13 +89,23 @@ class WeatherAPI extends Model{
         foreach($data as $key => $val){
                 $json[$key] = $this->formatDataForOutput($val);
         }
-        return json_encode(empty($json) ? ['notice' => 'No data available'] : $json, JSON_PRETTY_PRINT);
+        if(empty($json)){
+            http_response_code(404);
+        }
+        else{
+            http_response_code(200);
+            return json_encode($json, JSON_PRETTY_PRINT);
+        }
+//        return json_encode(empty($json) ? ['notice' => 'No data available'] : $json, JSON_PRETTY_PRINT);
     }
     
     public function returnTemperatureRanges($params){
         $data = $this->select('weather.record_id, weather.temperature, location_data.city, location_data.state, location_data.lat, location_data.lon')
                 ->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])
                 ->where(sprintf('date BETWEEN %s AND %s', strtotime($params['start']), strtotime($params['end'])))->orderBy('city ASC, state ASC')->all();
+        if(empty($data)){
+            return json_encode(['lat' => '', 'lon' => '', 'city' => '', 'state' => '', 'message' => 'There is no weather data in the given date range']);
+        }
         $state_data = [];
         foreach($data as $key => $val){
             $state_data[$val['city']]['lat'] = $val['lat'];
@@ -119,10 +132,16 @@ class WeatherAPI extends Model{
     
     public function eraseData($params){
         if(empty($params)){
-            return $this->deleteAll();
+            if($this->deleteAll()){
+                http_response_code(200);
+                return true;
+            }
         }
         else{
-            return $this->deleteFromParams($params);
+            if($this->deleteFromParams($params)){
+                http_response_code(200);
+                return true;
+            }
         }
     }
     

@@ -5,7 +5,7 @@ $ch = curl_init($url);
 //setup request to send json via POST
 $data = 
         '{
- "id": 22, 
+ "id": 32, 
  "date": "1985-01-04",
  "location": {
       "lat": 32.5,
@@ -27,6 +27,7 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
 //return response instead of outputting
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HEADER  , true);
 //execute the POST request
 $result = curl_exec($ch);
 print_r($result);
