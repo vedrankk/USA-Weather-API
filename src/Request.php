@@ -72,4 +72,8 @@ class Request{
         }
         return $exists;
     }
+    
+    public function returnAction(){
+        return method_exists($this, $this->action) ? $this->{$this->action}() : $this->action404();
+    }
 }

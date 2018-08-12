@@ -2,15 +2,11 @@
 
 class Controller extends Request
 {
-    private $action = '';
+    protected $action = '';
     
     public function __construct(){
        $this->api = new WeatherAPI();
        $this->action = $_SERVER['REQUEST_METHOD'] == 'POST' ? 'actionCreate' : 'action' .ucfirst(isset($_GET['a']) ? $_GET['a'] : 'Default');
-    }
-    
-    public function returnAction(){
-        return method_exists($this, $this->action) ? $this->{$this->action}() : $this->action404();
     }
     
     public function actionCreate(){

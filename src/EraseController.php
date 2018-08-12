@@ -2,7 +2,7 @@
 
 class EraseController extends Request
 {
-    private $action = '';
+    protected $action = '';
     
     public function __construct(){
        $this->api = new WeatherAPI();

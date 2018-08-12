@@ -29,7 +29,7 @@ class WeatherAPI extends Model{
     
     public function types() : array
     {
-        return ['id' => 'float', 'date' => 'string', 'location' => 'int', 'temperature' => 'array'];
+        return ['id' => 'int', 'date' => 'string', 'location' => 'int', 'temperature' => 'array'];
     }
     
     public function loadJson($val){
