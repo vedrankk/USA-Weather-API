@@ -208,7 +208,7 @@ foreach($data as $key => $val){
     curl_setopt($ch, CURLOPT_HEADER  , true);
     
     $result = curl_exec($ch);
-    print_r($result);
+    print_r($result); echo '<br>';
     
     curl_close($ch);
 }

@@ -71,8 +71,8 @@ class WeatherAPI extends Model{
         $json['id'] = $data['id'];
         $json['date'] = date('Y-m-d', $data['date']);
         $json['location'] = [
-            'lat' => $data['lat'],
-            'lon' => $data['lon'],
+            'lat' => floatval($data['lat']),
+            'lon' => floatval($data['lon']),
             'city' => $data['city'],
             'state' => $data['state']
         ];
@@ -108,8 +108,8 @@ class WeatherAPI extends Model{
         }
         $state_data = [];
         foreach($data as $key => $val){
-            $state_data[$val['city']]['lat'] = $val['lat'];
-            $state_data[$val['city']]['lon'] = $val['lon'];
+            $state_data[$val['city']]['lat'] = floatval($val['lat']);
+            $state_data[$val['city']]['lon'] = floatval($val['lon']);
             $state_data[$val['city']]['city'] = $val['city'];
             if(!isset($state_data[$val['city']]['temperature'])){
                 $state_data[$val['city']]['temperature'] = [];
