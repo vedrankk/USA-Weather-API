@@ -9,6 +9,9 @@ class EraseController extends Request
        $this->action = 'actionDefault';
     }
     
+    /*
+     * Calls the coresponding function based on the request
+     */
     public function actionDefault(){
         $requestParams = $this->getEraseRequestParams($_GET);
         if(!isset($requestParams['error'])){

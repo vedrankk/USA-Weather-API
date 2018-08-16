@@ -3,16 +3,29 @@
 //include '../Database/Model.php';
 
 class WeatherAPI extends Model{
+    
+    /**
+     * Overrides parent::tableName()
+     * @return string
+     */
     public function tableName() : string
     {
         return 'weather';
     }
     
+    /**
+     * Overrides parent::attributes()
+     * @return array
+     */
     public function attributes() : array
     {
         return ['record_id', 'id', 'date', 'location', 'temperature'];
     }
     
+    /**
+     * Overrides parent::filters()
+     * @return array
+     */
     public function filters() : array
     {
         return [
@@ -27,14 +40,23 @@ class WeatherAPI extends Model{
         ];
     }
     
+     /**
+     * Overrides parent::types()
+     * @return array
+     */
     public function types() : array
     {
         return ['id' => 'int', 'date' => 'string', 'location' => 'int', 'temperature' => 'array'];
     }
     
-    public function loadJson($val){
+    /*
+     * Loads the JSON from the request, checks if the ID exists and proccesses the data
+     * Creates a new entry in Location Data and validates the data formats in both classes
+     */
+    public function loadJson($val)
+    {
             $val = (array) json_decode($val);
-            if(!empty($this->select('id')->where(['id' => $val['id']])->asArray()->one())){
+            if(empty($val) || !empty($this->select('id')->where(['id' => $val['id']])->asArray()->one())){
                  http_response_code(400);
                  return;
             }
@@ -59,9 +81,7 @@ class WeatherAPI extends Model{
                 $this->innerSet($v_key, $v_val);
             }
             if($this->save()){
-                echo 'Saved value.<br>';
               http_response_code(201);
-              return true;
             }
             else{
                 $location_data->delete();
@@ -70,6 +90,9 @@ class WeatherAPI extends Model{
             }
     }
     
+    /*
+     * Formats data gotten from the database so it is outputed to the user correctly
+     */
     private function formatDataForOutput(array $data) : array
     {
         $json = [];
@@ -88,6 +111,10 @@ class WeatherAPI extends Model{
         
     }
     
+    /*
+     * @param array $params - GET request params(if they exist)
+     * Based on the params, gets all data, or data specific for lat/lon
+     */
     public function returnAllData($params){
         $data = $this->select()->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])->orderBy('id ASC');
         $data = !empty($params) ? $data->where(['lat' => $params['lat'], 'lon' => $params['lon']])->all() : $data->all();
@@ -110,6 +137,10 @@ class WeatherAPI extends Model{
 //        return json_encode(empty($json) ? ['notice' => 'No data available'] : $json, JSON_PRETTY_PRINT);
     }
     
+    /*
+     * @param array $params - GET request params
+     * Gets the temperature based on date and location, groups by city and counts min/max for every city in the given range
+     */
     public function returnTemperatureRanges($params){
         $data = $this->select('weather.record_id, weather.temperature, location_data.city, location_data.state, location_data.lat, location_data.lon')
                 ->leftJoin(['location_data', 'location_data.location_id', 'weather.location'])
@@ -138,6 +169,10 @@ class WeatherAPI extends Model{
         return json_encode(array_values($state_data));
     }
     
+    /*
+     * @param array $params - GET request params(if they exist)
+     * Depening on the params, deletes all data or data based on lat/lon and date
+     */
     public function eraseData($params){
         if(empty($params)){
             if($this->deleteAll()){
@@ -154,7 +189,9 @@ class WeatherAPI extends Model{
     }
     
     
-        
+    /*
+     * Deletes all the data from the table
+     */
     private function deleteAll(){
 //            $sql = 'DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id';
         $sql = 'TRUNCATE weather; TRUNCATE location_data';
@@ -168,6 +205,10 @@ class WeatherAPI extends Model{
             }
     }
     
+    /*
+     * @param array $params - GET request params
+     * Deletes data from the table based on params
+     */
     private function deleteFromParams($params){
         $sql = sprintf(
                 "DELETE weather, location_data FROM weather LEFT JOIN location_data ON weather.location = location_data.location_id WHERE location_data.lat = %s AND location_data.lon = %s AND weather.date BETWEEN %s AND %s", $params['lat'], $params['lon'], strtotime($params['start']), strtotime($params['end']));

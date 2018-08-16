@@ -74,6 +74,11 @@ class Model extends DB
             return [];
         }
         
+        /*
+         * Checks if there is an expected type for the attribute and validates it
+         * @param string $name - Attribute name
+         * @param mixed $value - Attribute value
+         */
         protected function validateTypes($name, $value){
             if(isset($this->types()[$name])){
                 $func = 'is_'.$this->types()[$name];
@@ -90,6 +95,9 @@ class Model extends DB
             }
         }
         
+        /*
+         * Checks if a filter exists for an attribute and calls that filter on the value
+         */
         public function __set($name, $value)
         {
             if(!empty($value) && array_key_exists($name, $this->filters())){
@@ -444,11 +452,21 @@ class Model extends DB
 		}
 	}
         
+        /*
+         * Converts the date to unix date
+         * @param string $date
+         * @return int
+         */
         protected function filterUnixDate(string $date) : int
         {
             return strtotime($date);
         }
-    
+        
+        /*
+         * Function called if we want to validate the type of the attribute we are setting
+         * @param string $name - Attribute name
+         * @param mixed $value - Attribute value
+         */
         protected function innerSet($name, $value){
             if($this->validateTypes($name, $value)){
                 $this->__set($name, $value);
@@ -458,6 +476,9 @@ class Model extends DB
             }
         }
         
+        /*
+         * Filters the array and returns the json string
+         */
         protected function filterJsonArray(array $json, array $settings) : string
         {
             foreach($json as $key => $val){
@@ -468,6 +489,9 @@ class Model extends DB
             return json_encode($json);
         }
         
+        /*
+         * Validates if the value is a float value
+         */
         protected function filterFloatValue($value, $length) : float
         {   
           return floatval(number_format((float)$value, $length[0], '.', ''));
