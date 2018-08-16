@@ -1,6 +1,6 @@
 <?php
 
-$url = 'https://morning-waters-61140.herokuapp.com/weather';
+$url = 'http://localhost/FishingBooker/weather';
 
 $data = [
     '{

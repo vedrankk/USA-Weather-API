@@ -12,5 +12,5 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 $controller = new EraseController();
-$controller->returnAction();
+echo $controller->returnAction();
 

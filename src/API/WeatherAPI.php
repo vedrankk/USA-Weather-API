@@ -34,9 +34,7 @@ class WeatherAPI extends Model{
     
     public function loadJson($val){
             $val = (array) json_decode($val);
-            print_r($this->select('id')->where(['id' => $val['id']])->asArray()->one()); echo '<br>';
             if(!empty($this->select('id')->where(['id' => $val['id']])->asArray()->one())){
-                echo 'ID: '.$val['id'];
                  http_response_code(400);
                  return;
             }
@@ -51,17 +49,23 @@ class WeatherAPI extends Model{
                         return json_encode(['response' => $location_data->error]);
                     }
                 }
+                if($v_key == 'temperature' && sizeof($v_val) !== 24){
+                    if(isset($location_data)){
+                        $location_data->delete();
+                    }
+                    http_response_code(400);
+                    return json_encode(['response' => 'Temperature does not have 24 values for location id: '.$val['id']]);
+                }
                 $this->innerSet($v_key, $v_val);
             }
             if($this->save()){
+                echo 'Saved value.<br>';
               http_response_code(201);
               return true;
             }
             else{
                 $location_data->delete();
                 http_response_code(400);
-//                die();
-//                return false;
                 return json_encode(['response' => $this->error]);
             }
     }
@@ -138,11 +142,13 @@ class WeatherAPI extends Model{
         if(empty($params)){
             if($this->deleteAll()){
                 http_response_code(200);
+                return json_encode(['response' => 'Data deleted']);
             }
         }
         else{
             if($this->deleteFromParams($params)){
                 http_response_code(200);
+                return json_encode(['response' => 'Data deleted']);
             }
         }
     }

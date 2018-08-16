@@ -1,6 +1,6 @@
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
 RewriteRule ^weather$ ./weather.php
-RewriteRule ^weather\/([a-zA-z)]+)?$ weather?a=$1 [L,QSA]
+RewriteRule ^weather\/([a-zA-z)]+)?$ weather.php?a=$1 [L,QSA]
 RewriteRule ^erase$ ./erase.php
+RewriteRule ^test$ ./test.php
